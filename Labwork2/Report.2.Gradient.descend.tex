@@ -139,7 +139,7 @@
         
         % Title
         \rule{\linewidth}{0.3mm} \\[0.4cm]
-        { \Huge \bfseries\color{blue} Labwork 1: Gradient Descent \\[0.4cm] }
+        { \Huge \bfseries\color{blue} Labwork 2: Linear Regression \\[0.4cm] }
         \rule{\linewidth}{0.3mm} \\[0.7cm]
         
         \large Academic Year: 2024-2026
@@ -158,108 +158,203 @@
 \newpage
 \pagenumbering{arabic}
 
+% Keep the preamble and title page sections as they are...
+
 \begin{abstract}
-    Implement (from scratch!) gradient descend to find minimum value of a given function f(x) and its first order derivative f\_()
+        \noindent Implement (from scratch!) linear regression using previous gradient descend code to optimize w1 and w0
         \begin{itemize}
-            \item Print the intermediate iterative steps, similar to the previous table (time, x, f(x))
-            \item Try experimenting with the previous example f(x) = $x^2$   
+            \item Input: a CSV file
+            \item Output: w1, w0
+            \item Print the intermediate iterative steps
         \end{itemize}
-
+        \noindent Try experimenting with the previous example of house price
 \end{abstract}
-
 
 \chapter{How you implement the algorithm.}
 
 \section{Mathematical Background}
-Gradient descent is an optimization algorithm used to minimize a function by iteratively moving in the direction of steepest descent, which is defined by the negative of the gradient. For a function $f(x)$, the update rule is:
+Linear regression aims to model the relationship between a dependent variable and one or more independent variables by fitting a linear equation to the data. For a simple linear regression, we have:
 
 \begin{equation}
-x_{t+1} = x_t - \alpha \nabla f(x_t)
+y = w_1 \cdot x + w_0
 \end{equation}
 
-where $\alpha$ is the learning rate and $\nabla f(x_t)$ is the gradient of the function at point $x_t$.
+\noindent where $y$ is the predicted value, $x$ is the input feature, $w_1$ is the slope, and $w_0$ is the y-intercept.
+
+\noindent To find the optimal values of $w_0$ and $w_1$, we define a loss function that measures the difference between the predicted values and the actual values:
+
+\begin{equation}
+L(w_0, w_1) = \frac{1}{2} \sum_{i=1}^{m} (w_1 \cdot x_i + w_0 - y_i)^2
+\end{equation}
+
+\noindent Gradient descent minimizes this loss function by iteratively updating the parameters in the direction of the negative gradient:
+
+\begin{equation}
+w_0 = w_0 - \alpha \frac{\partial L}{\partial w_0} = w_0 - \alpha \sum_{i=1}^{m} (w_1 \cdot x_i + w_0 - y_i)
+\end{equation}
+
+\begin{equation}
+w_1 = w_1 - \alpha \frac{\partial L}{\partial w_1} = w_1 - \alpha \sum_{i=1}^{m} (w_1 \cdot x_i + w_0 - y_i) \cdot x_i
+\end{equation}
+
+\noindent where $\alpha$ is the learning rate that controls the step size during optimization.
 
 \section{Implementation Details}
-\noindent For this exercise, we implement the gradient descent to find the minimum value of $f(x) = x^2$. The derivative of this function is $f'(x) = 2x$. The algorithm is implemented from scratch in Python, with the following components:
+\noindent In this exercise, I implemented linear regression using gradient descent from scratch in Python. The key components of the implementation are:
 
-\subsection{Function and Derivative Definition}
-\noindent First, we define the function to minimize and its derivative:
+\subsection{Loss Function}
+\noindent The mean squared error (MSE) loss function:
 
 \begin{verbatim}
-def test_function(x):
-    return x**2
+def loss(x, y, w0=0, w1=1):
+    m = len(x)
+    cost = 0.0
+    for i in range(m):
+        f_wb_i = w1 * x[i] + w0
+        cost = cost + (f_wb_i - y[i])**2
+    total_cost = (1 / (2)) * cost
+    return total_cost
+\end{verbatim}
 
-def df(x):
-    return 2*x
+\subsection{Gradient Computation}
+\noindent Computing the gradients for both $w_0$ and $w_1$:
+
+\begin{verbatim}
+def gradient(x, y, w0=0, w1=1):
+    n = len(x)
+    dL_dw0 = 0.0
+    dL_dw1 = 0.0
+    for i in range(n):
+        err = (w0 + w1 * x[i]) - y[i]
+        dL_dw0 += err
+        dL_dw1 += err * x[i]
+    return dL_dw0, dL_dw1
 \end{verbatim}
 
 \subsection{Gradient Descent Algorithm}
-\noindent The core algorithm is implemented as follows:
+\noindent The main gradient descent optimization procedure:
 
 \begin{verbatim}
-def gradient_descent(starting_point, learning_rate=0.1, num_iterations=20):
-    x = starting_point
-    iteration = 0
-    history = []
+def gradient_descent(x, y, w0=0, w1=1, lr=0.01, epochs=1000):
+    w0_history = []
+    w1_history = []
+    loss_history = []
+
+    x = np.array(x)
+    y = np.array(y)
+    for i in range(epochs):
+        dL_dw0, dL_dw1 = gradient(x, y, w0, w1)
     
-    while iteration < num_iterations:
-        gradient = df(x)
-        history.append({'iteration': iteration, 'x': x, 'gradient': gradient})
-        iteration += 1
-        x = x - learning_rate * gradient
-        
-    result = pd.DataFrame(history)
-    result['f(x)'] = test_function(result['x'])
-    return result
+        w0 -= lr * dL_dw0
+        w1 -= lr * dL_dw1
+    
+        w0_history.append(w0)
+        w1_history.append(w1)
+        current_loss = loss(x, y, w0, w1)
+        loss_history.append(current_loss)
+    
+        if i % (epochs // 10) == 0 or i == epochs - 1:
+             print(f"Epoch {i:5d}: Loss = {current_loss:.4e}, w0 = {w0:.4f}, w1 = {w1:.4f}")
+
+    return w0, w1, loss_history
 \end{verbatim}
 
-\noindent This implementation:
-\begin{itemize}
-    \item Takes a starting point, learning rate, and number of iterations as parameters
-    \item Initializes $x$ with the starting point
-    \item Iteratively computes the gradient at the current point
-    \item Updates $x$ using the update rule: $x = x - \alpha \times \text{gradient}$
-    \item Records the history of iterations including iteration number, $x$ value, and gradient
-    \item Returns a pandas DataFrame with the history and $f(x)$ values
-\end{itemize}
+\subsection{Visualization Functions}
+\noindent To visualize the results, I implemented two key plotting functions:
+
+\begin{verbatim}
+def plot_loss(loss_history):
+    plt.plot(loss_history)
+    plt.title("Loss over epochs")
+    plt.xlabel("Epochs")
+    plt.ylabel("Loss")
+    plt.show()
+    
+def plot_data(x, y, w0, w1):    
+    plt.scatter(x, y, color='blue', label='Data points')
+    x_range = np.linspace(min(x), max(x), 100)
+    y_range = w0 + w1 * x_range
+    plt.plot(x_range, y_range, color='red', label='Regression line')
+    plt.title("Linear Regression")
+    plt.xlabel("x")
+    plt.ylabel("y")
+    plt.legend()
+    plt.show()
+\end{verbatim}
+
+\section{Dataset}
+\noindent For this experiment, I used a sample dataset representing house prices:
+
+\begin{verbatim}
+x_train = [30, 32.4138, 34.8276, 37.2414, 39.6552]
+y_train = [448.524, 509.248, 535.104, 551.432, 623.418]
+\end{verbatim}
+
+\noindent where $x$ represents the house size (in square meters) and $y$ represents the house price (in thousands of dollars).
 
 \section{Experimental Setup}
-\noindent To analyze the effect of different learning rates on convergence, we test the algorithm with multiple learning rates:
+\noindent To analyze the effect of different learning rates on convergence, I conducted experiments with various learning rates:
 
 \begin{verbatim}
-starting_point = 5
-learning_rate = [1, 0.1, 0.01, 0.001]
-num_iterations = 50
+learning_rates = [0.1, 0.01, 0.001, 0.0001]
+epochs = 50
+initial_w0 = 0.0
+initial_w1 = 1.0
 \end{verbatim}
 
-\noindent For each learning rate, we:
-\begin{itemize}
-    \item Run the gradient descent algorithm
-    \item Store the results with the corresponding learning rate
-    \item Visualize the convergence path using a 2×2 grid of plots
-\end{itemize}
-
 \section{Analysis of Results}
-\noindent The visualization shows how different learning rates affect the convergence behavior:
+\noindent The experiments revealed significant differences in convergence behavior across different learning rates:
 
+\subsection{Learning Rate = 0.001}
 \begin{figure}[H]
     \centering
-    \includegraphics[width=1\linewidth]{image/learning-rate-comparision.png}
-    \caption{Convergence behavior of gradient descent with different learning rates}
+    \includegraphics[width=0.6\linewidth]{image/lr-loss-func-0001.png}
+    \caption{Loss Function with Learning Rate 0.001}
     \label{fig:enter-label}
 \end{figure}
 
-\begin{itemize}
-    \item \textbf{Learning Rate 1.0}: The algorithm oscillates and fails to converge, demonstrating that too large a learning rate can cause the algorithm to overshoot the minimum.
-    \item \textbf{Learning Rate 0.1}: Shows optimal convergence behavior, quickly reaching the minimum.
-    \item \textbf{Learning Rate 0.01}: Converges more slowly but steadily.
-    \item \textbf{Learning Rate 0.001}: Exhibits extremely slow convergence, demonstrating that too small a learning rate is inefficient.
-\end{itemize}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\linewidth]{image/linear-res-0001.png}
+    \caption{Linear Regression with Learning Rate 0.001}
+    \label{fig:enter-label}
+\end{figure}
 
-\noindent This implementation demonstrates the critical importance of selecting an appropriate learning rate for gradient descent optimization.
+\noindent Using a learning rate of 0.001 resulted in a diverging loss function. The parameters oscillated without converging to a minimum, indicating that the learning rate was still too large (predictably).
 
-    
+\subsection{Learning Rate = 0.0001} 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\linewidth]{image/lr-loss-00001.png}
+    \caption{Loss Function with Learning Rate 0.0001}
+    \label{fig:enter-label}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\linewidth]{image/lienar-res-00001.png}
+    \caption{Linear Regression with Learning Rate 0.0001}
+    \label{fig:enter-label}
+\end{figure}
+
+\noindent A learning rate of 0.0001 resulted in a very good convergence, which we have implemented in the Labwork 1. The convergence is fast (after 3 epochs) and then the loss function is stable. We should achieve the \textbf{w0} and \textbf{w1} values of 0.3995 and 15.3170 respectively. 
+
+\section{Prediction Performance}
+\noindent Using the optimized parameters ($w_0 = 0.3995$, $w_1 = 15.3170$) from the best model (learning rate = 0.01), we can make predictions for new data points. For example, for a house with 35 square meters:
+
+\begin{verbatim}
+predicted_price = 0.3995 + 15.3170 * 35 = 536.4945 (thousand dollars)
+\end{verbatim}
+
+\noindent And this is the result of the prediction using the model:
+\begin{verbatim}
+  Predicted value for x=35: 536.4940
+\end{verbatim}
+\noindent This indicates that the model predicts a house price of approximately \$536,494 for a 35 square meter house.
+
+\section{Conclusion}
+\noindent This implementation demonstrates the core concepts of linear regression implemented from scratch using gradient descent. The choice of learning rate is crucial for convergence—too large and the algorithm may diverge, too small and convergence becomes impractically slow. For this specific housing price dataset, a learning rate of 0.0001 provided the best balance between convergence speed and stability.
+
 \clearpage
 \pagenumbering{gobble}
-
 \end{document}
