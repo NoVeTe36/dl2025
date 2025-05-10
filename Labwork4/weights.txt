@@ -1,0 +1,8 @@
+# Weights of the first layer
+10 -10
+# Weights of the second layer
+10 -10
+# Biases of the first layer
+-5
+# Biases of the second layer
+15
