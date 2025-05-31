@@ -34,7 +34,6 @@ class PoolingLayer:
                         max_val = float('-inf')
                         max_i, max_j = 0, 0
                         
-                        # Find maximum in pooling window
                         for pi in range(self.pool_size):
                             for pj in range(self.pool_size):
                                 h_idx = i * self.stride + pi
@@ -61,7 +60,6 @@ class PoolingLayer:
         return output
 
     def backward(self, output_gradient):
-        # Placeholder - return zero gradients
         batch_size = len(self.last_input)
         channels = len(self.last_input[0])
         input_height = len(self.last_input[0][0])

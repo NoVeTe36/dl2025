@@ -3,6 +3,7 @@
 % The preceding line is only needed to identify funding in the first footnote. If that is unneeded, please comment it out.
 \usepackage{cite}
 \usepackage{amsmath,amssymb,amsfonts}
+ \usepackage{url} 
 \usepackage{algorithmic}
 \usepackage{graphicx}
 \usepackage{textcomp}
@@ -74,7 +75,7 @@ The convolutional layers implement 2D convolution operations to extract spatial 
 \label{fig:convolution}
 \end{figure}
 
-The convolution process involves sliding learnable kernels across the input feature maps, computing element-wise multiplications and summations at each position. The implementation includes custom forward and backward propagation for gradient computation during training.
+The convolution process involves sliding learnable kernels across the input feature maps, computing element-wise multiplications and summations at each position. The implementation includes custom feed forward and backward propagation for gradient computation during training.
 
 \subsection{Pooling Layers}
 Pooling layers are essential for reducing the spatial dimensions of feature maps while retaining important information. The implemented CNN uses max pooling, which selects the maximum value from a defined window (e.g., 2×2) and strides across the feature map.
@@ -219,7 +220,7 @@ The MNIST dataset preprocessing is handled through a custom DataLoader implement
 \subsection{Training Process}
 The training process involves iterating over the training dataset in batches, performing forward and backward propagation to update model weights. The implementation follows a comprehensive training pipeline with validation monitoring and early stopping mechanisms.
 
-\textbf{Forward Propagation:} Each input batch is passed through the CNN layers sequentially:
+\textbf{Feed Forward:} Each input batch is passed through the CNN layers sequentially:
 \begin{itemize}
 \item Convolutional layers with ReLU activation extract spatial features
 \item Max pooling layers reduce spatial dimensions while preserving important information
@@ -272,7 +273,7 @@ The trained model is evaluated on three distinct datasets to assess performance 
 
 \textbf{Test Set Evaluation:} Final performance assessment on completely unseen data. Test accuracy represents the model's true generalization capability and expected performance on real-world data.
 
-\textbf{Overfitting Detection:} The implementation automatically detects potential overfitting by comparing training and validation accuracies. A warning is displayed when training accuracy exceeds validation accuracy by more than 10\%, indicating the model may have memorized training data rather than learning generalizable patterns.
+\textbf{Overfitting Problems:} The implementation automatically detects potential overfitting by comparing training and validation accuracies. A warning is displayed when training accuracy exceeds validation accuracy by more than 10\%, indicating the model may have memorized training data rather than learning generalizable patterns.
 
 \subsection{Performance Visualization}
 Training progress is visualized through comprehensive plots showing:
@@ -280,7 +281,6 @@ Training progress is visualized through comprehensive plots showing:
 \item Training and validation loss curves over epochs
 \item Training and validation accuracy progression
 \item Training time per epoch to monitor computational efficiency
-\item Loss difference as an overfitting indicator
 \end{itemize}
 
 These visualizations enable analysis of training dynamics, convergence behavior, and identification of optimal stopping points for future training sessions.
@@ -373,11 +373,19 @@ These results demonstrate the model's strong performance on the MNIST digit clas
 \section{Conclusion and Future work}
 This report reproduces an implementation of a Convolutional Neural Network (CNN) from scratch for handwritten digit recognition on the MNIST dataset. The implementation includes essential components such as convolutional layers, pooling layers, dense layers, and activation functions, all developed without relying on high-level frameworks. The CNN architecture follows the LeNet-5 inspired design, achieving competitive performance on the MNIST classification task.
 However, it is important to note that the current implementation uses a subset of 1,000 samples from the MNIST dataset for training, validation, and testing. This decision was made due to computational complexity and the need for efficient training on a \textit{\textbf{cheap}} laptop. The model demonstrates effective learning and generalization capabilities, achieving high accuracy on both training and validation datasets.
-Future work could involve extending the implementation to handle the full MNIST dataset, optimizing computational efficiency, and exploring more advanced CNN architectures. Additionally, further experiments with different hyperparameters and regularization techniques could enhance model performance and 
+Future work could involve extending the implementation to handle the full MNIST dataset, optimizing computational efficiency, and exploring more advanced CNN architectures. Additionally, further experiments with different hyperparameters and regularization techniques could enhance model performance.
 
 \begin{thebibliography}{00}
-\bibitem{b1} M. Kayed, A. Anter, and H. Mohamed, ``Classification of Garments from Fashion MNIST Dataset Using CNN LeNet-5 Architecture,'' in 2020 International Conference on Innovative Trends in Communication and Computer Engineering (ITCE), 2020, pp. 238--245.
+
+\bibitem{b1} M. Kayed, A. Anter, and H. Mohamed, ``Classification of Garments from Fashion MNIST Dataset Using CNN LeNet-5 Architecture,'' in \textit{2020 International Conference on Innovative Trends in Communication and Computer Engineering (ITCE)}, 2020, pp. 238--245.
+
+\bibitem{b2} G. Porpiglia, ``CNN-from-scratch,'' GitHub repository, 2020. Available: \url{https://github.com/GiacomoPorpiglia/CNN-from-scratch}.
+
+\bibitem{b3} Y. Duan, ``MNIST-with-CNN-from-Scratch,'' GitHub repository, 2021. Available: \url{https://github.com/yawen-d/MNIST-with-CNN-from-Scratch}.
+
+\bibitem{b4} W. Salmon, ``Simple MNIST NN from Scratch (Numpy, No TF/Keras),'' Kaggle, 2021. Available: \url{https://www.kaggle.com/code/wwsalmon/simple-mnist-nn-from-scratch-numpy-no-tf-keras}.
+
 \end{thebibliography}
 
 
-\end{document}
+\end{document}  
