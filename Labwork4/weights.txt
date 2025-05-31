@@ -1,8 +1,15 @@
-# Weights of the first layer
-10 -10
-# Weights of the second layer
-10 -10
-# Biases of the first layer
--5
-# Biases of the second layer
-15
+# First hidden neuron
+-1 -1
+1.5
+
+# Second hidden neuron
+0.5 -1
+1
+
+# Third hidden neuron (x₁ OR x₂)
+1 1
+-1
+
+# Output layer weights
+-1.5 1 1
+0

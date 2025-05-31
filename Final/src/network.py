@@ -64,16 +64,14 @@ class CNN:
         return output
 
     def backward(self, x, y):
-        # Forward pass
-        z1 = self.conv1.forward(x)           # (batch, 6, 24, 24)
+        z1 = self.conv1.forward(x)
         a1 = self.relu.forward(z1)
-        p1 = self.pool1.forward(a1)          # (batch, 6, 12, 12)
+        p1 = self.pool1.forward(a1)
         
-        z2 = self.conv2.forward(p1)          # (batch, 16, 8, 8)
+        z2 = self.conv2.forward(p1)
         a2 = self.relu.forward(z2)
-        p2 = self.pool2.forward(a2)          # (batch, 16, 4, 4)
+        p2 = self.pool2.forward(a2)
         
-        # Flatten for dense layers
         flattened = []
         batch_size = len(p2)
         for sample in p2: 
@@ -82,55 +80,64 @@ class CNN:
                 for row in channel:
                     flat_sample.extend(row)
             flattened.append(flat_sample)
-        
-        # Dense layers
-        z3 = self.dense1.forward(flattened)   # (batch, 120)
+            
+        z3 = self.dense1.forward(flattened)
         a3 = self.relu.forward(z3)
-        
-        z4 = self.dense2.forward(a3)          # (batch, 84)
+        z4 = self.dense2.forward(a3)
         a4 = self.relu.forward(z4)
-        
-        z5 = self.dense3.forward(a4)          # (batch, 10)
+        z5 = self.dense3.forward(a4)
         predictions = self.softmax.forward(z5)
         
-        # Calculate loss
         loss = self.loss_function.calculate(predictions, y)
         grad = self.loss_function.gradient(predictions, y)
-        
-        # Backward through dense layers
         grad = self.dense3.backward(grad)
-        
-        # Apply ReLU derivative manually for z4
         for b in range(len(grad)):
             for j in range(len(grad[b])):
                 if z4[b][j] <= 0:
                     grad[b][j] = 0.0
         
         grad = self.dense2.backward(grad)
-        
         for b in range(len(grad)):
             for j in range(len(grad[b])):
                 if z3[b][j] <= 0:
                     grad[b][j] = 0.0
         
         grad = self.dense1.backward(grad)
-        
-        # grad is currently (batch_size, 256) -> need (batch_size, 16, 4, 4)
         reshaped_grad = []
         for b in range(batch_size):
             sample_grad = []
             idx = 0
-            for c in range(16):  # 16 channels
+            for c in range(16):
                 channel_grad = []
-                for h in range(4):  # 4 height
+                for h in range(4):
                     row_grad = []
-                    for w in range(4):  # 4 width
+                    for w in range(4):
                         row_grad.append(grad[b][idx])
                         idx += 1
                     channel_grad.append(row_grad)
                 sample_grad.append(channel_grad)
             reshaped_grad.append(sample_grad)
-                    
+        
+
+        grad = self.pool2.backward(reshaped_grad)
+        for b in range(len(grad)):
+            for f in range(len(grad[b])):
+                for h in range(len(grad[b][f])):
+                    for w in range(len(grad[b][f][h])):
+                        if z2[b][f][h][w] <= 0:
+                            grad[b][f][h][w] = 0.0
+        
+        grad = self.conv2.backward(grad)
+        grad = self.pool1.backward(grad)
+        for b in range(len(grad)):
+            for f in range(len(grad[b])):
+                for h in range(len(grad[b][f])):
+                    for w in range(len(grad[b][f][h])):
+                        if z1[b][f][h][w] <= 0:
+                            grad[b][f][h][w] = 0.0
+        
+        grad = self.conv1.backward(grad)
+        
         return loss
 
     def calculate_accuracy(self, data_loader, max_batches=None):
